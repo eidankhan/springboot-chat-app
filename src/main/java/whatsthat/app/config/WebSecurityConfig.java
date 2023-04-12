@@ -16,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -37,6 +38,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     @Lazy
     private JwtRequestFilter jwtRequestFilter;
+
+
+    @Autowired
+    private AccessDeniedHandler jwtAccessDeniedHandler;
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -62,12 +67,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // We don't need CSRF for this example
         httpSecurity.csrf().disable()
                 // dont authenticate this particular request
-                .authorizeRequests().antMatchers("/user", "/login").permitAll().
+                .authorizeRequests().antMatchers("/user", "/login").permitAll()
                 // all other requests need to be authenticated
-                        anyRequest().authenticated().and().
+                .anyRequest().authenticated().and()
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
-                        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
+                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
+                .and()
+                .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         // Add a filter to validate the tokens with every request

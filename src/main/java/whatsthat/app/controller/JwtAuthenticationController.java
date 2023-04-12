@@ -14,6 +14,7 @@ import whatsthat.app.dto.UserDTO;
 import whatsthat.app.config.JwtTokenUtil;
 import whatsthat.app.config.JwtUserDetailsService;
 import whatsthat.app.entity.User;
+import whatsthat.app.modal.GenericResponse;
 import whatsthat.app.modal.JwtRequest;
 import whatsthat.app.service.UserService;
 
@@ -40,21 +41,26 @@ public class JwtAuthenticationController {
     private UserService userService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
-        Map<String, Object> response = new HashMap<String, Object>();
-        User user = userService.findByEmail(authenticationRequest.getEmail());
-        Boolean isAuthenticated = authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
-        if (!isAuthenticated)
-        {
-            response.put("isLoggedIn", false);
-            response.put("message", "Unable to authenticate user");
-            System.out.println("Unable to authenticate user");
-            return ResponseEntity.ok(response);
+    public GenericResponse createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
+        try {
+            Map<String, Object> response = new HashMap<String, Object>();
+            User user = userService.findByEmail(authenticationRequest.getEmail());
+            Boolean isAuthenticated = authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
+
+            if (!isAuthenticated)
+                new GenericResponse(400, "Invalid email/password supplied");
+
+            final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
+            final String token = jwtTokenUtil.generateToken(userDetails);
+            response.put("user_id", userService.findByEmail(authenticationRequest.getEmail()).getId());
+            response.put("session_token", token);
+            return new GenericResponse(200, "OK", response);
         }
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
-        final String token = jwtTokenUtil.generateToken(userDetails);
-        response.put("token", token);
-        return ResponseEntity.ok(response);
+        catch (Exception e) {
+            System.err.println("Error Message: " + e.getMessage());
+            e.printStackTrace();
+            return new GenericResponse(500, "Server Error");
+        }
     }
     private Boolean authenticate(String email, String password) {
         try {
@@ -68,28 +74,33 @@ public class JwtAuthenticationController {
 
 
     @PostMapping("/user")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody UserDTO user, BindingResult result) {
-        // Check the length of the password
-        if (user.getPassword().length() < 8)
-            return ResponseEntity.badRequest().body("Password must be at least 8 characters.");
+    public GenericResponse registerUser(@Valid @RequestBody UserDTO user, BindingResult result) {
+        try {
+            // Check the length of the password
+            if (user.getPassword().length() < 8)
+                return new GenericResponse(400, "Bad Request","Password must be at least 8 characters");
 
-        // Check whether password meets strong password requirements
-        boolean isStrongPassword = user.getPassword().matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).+$");
-        if(!isStrongPassword)
-            return ResponseEntity.badRequest().body("Password must contain at least one upper case letter, one number and one special character");
+            // Check whether password meets strong password requirements
+            boolean isStrongPassword = user.getPassword().matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!]).+$");
+            if (!isStrongPassword)
+                return new GenericResponse(400, "Bad Request", "Password must contain at least one upper case letter, one number and one special character");
+            if (result.hasErrors()) {
+                String errorMessage = result.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
+                        .collect(Collectors.joining(", "));
+                return new GenericResponse(400, "Bad Request",errorMessage);
+            }
 
-        if (result.hasErrors()) {
-            String errorMessage = result.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-            return ResponseEntity.badRequest().body(errorMessage);
+            User existingUser = userService.findByEmail(user.getEmail());
+            if (existingUser != null) {
+                return new GenericResponse(400, "Bad Request","Email address already exists");
+            }
+            UserDTO createdUser = userService.save(user);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("user_id", createdUser.getId());
+            return new GenericResponse(200, "Created", data);
         }
-
-        User existingUser = userService.findByEmail(user.getEmail());
-        if (existingUser != null) {
-            return ResponseEntity.badRequest().body("Email address already exists.");
+        catch (Exception e) {
+            return new GenericResponse(500, "Server Error");
         }
-
-        userService.save(user);
-        return ResponseEntity.ok("User registered successfully.");
     }
 }

@@ -8,7 +8,7 @@ import whatsthat.app.entity.User;
 public interface UserService {
     UserDTO save(UserDTO user);
 
-    User findById(Long id);
+    UserDTO findById(Long id);
 
     User findByEmail(String email);
 
