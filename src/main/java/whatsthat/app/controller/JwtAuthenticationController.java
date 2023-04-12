@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import whatsthat.app.dto.UserDTO;
 import whatsthat.app.config.JwtTokenUtil;
 import whatsthat.app.config.JwtUserDetailsService;
 import whatsthat.app.entity.User;
@@ -66,8 +67,8 @@ public class JwtAuthenticationController {
     }
 
 
-    @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@Valid @RequestBody User user, BindingResult result) {
+    @PostMapping("/user")
+    public ResponseEntity<String> registerUser(@Valid @RequestBody UserDTO user, BindingResult result) {
         // Check the length of the password
         if (user.getPassword().length() < 8)
             return ResponseEntity.badRequest().body("Password must be at least 8 characters.");
