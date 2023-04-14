@@ -6,10 +6,11 @@ import whatsthat.app.entity.User;
 
 @Service
 public interface UserService {
-    UserDTO save(UserDTO user);
+    UserDTO save(User user);
 
-    UserDTO findById(Long id);
+    User findById(Long id);
 
     User findByEmail(String email);
 
+    User getLoggedInUser();
 }

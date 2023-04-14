@@ -3,7 +3,9 @@ package whatsthat.app.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
+import whatsthat.app.dto.ContactDTO;
 import whatsthat.app.dto.UserDTO;
+import whatsthat.app.entity.Contact;
 import whatsthat.app.entity.User;
 
 @Mapper
@@ -24,4 +26,7 @@ public interface UserMapper {
     @Mapping(source = "email", target = "email")
     @Mapping(source = "password", target = "password")
     User userDTOToUser(UserDTO userDTO);
+
+    ContactDTO contactToContactDTO(Contact contact);
+
 }

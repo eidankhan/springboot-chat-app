@@ -1,11 +1,16 @@
 package whatsthat.app.dto;
 
+import whatsthat.app.entity.User;
+
+import java.util.List;
+
 public class UserDTO {
     private Long id;
     private String firstName;
     private String lastName;
     private String email;
     private String password;
+    private String profilePhotoPath;
 
     public UserDTO(){}
 
@@ -47,5 +52,13 @@ public class UserDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getProfilePhotoPath() {
+        return profilePhotoPath;
+    }
+
+    public void setProfilePhotoPath(String profilePhotoPath) {
+        this.profilePhotoPath = profilePhotoPath;
     }
 }
