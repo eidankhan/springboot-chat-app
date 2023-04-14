@@ -8,6 +8,7 @@ import whatsthat.app.repository.ContactRepository;
 import whatsthat.app.service.ContactService;
 import whatsthat.app.service.UserService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,6 +44,34 @@ public class ContactServiceImpl implements ContactService {
         contact.setUser(loggedInUser);
         contact.setContactUser(userToAdd);
         return contactRepository.save(contact);
+    }
+
+    @Override
+    public List<Contact> getAllContactsByUser(User loggedInUser) {
+        return contactRepository.findByUser(loggedInUser);
+    }
+
+    @Override
+    public boolean removeContact(Long contactId) {
+        try {
+            User loggedInUser = userService.getLoggedInUser();
+            User contact = userService.findById(contactId);
+            if(loggedInUser != null && contact != null) {
+                Optional<Contact> optionalContact = contactRepository.findByUserAndContactUser(loggedInUser, contact);
+                if (!optionalContact.isPresent()) {
+                    System.err.println("Contact not found");
+                    return false;
+                }
+                contactRepository.delete(optionalContact.get());
+                return true;
+            }
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
     }
 
 }
