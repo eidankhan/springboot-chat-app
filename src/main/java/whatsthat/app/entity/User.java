@@ -5,7 +5,9 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 public class User implements Serializable {
@@ -26,6 +28,8 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Contact> contacts = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<BlockedUser> blockedUsers = new HashSet<>();
 
     public User() {}
 
@@ -83,5 +87,13 @@ public class User implements Serializable {
 
     public void setContacts(List<Contact> contacts) {
         this.contacts = contacts;
+    }
+
+    public Set<BlockedUser> getBlockedUsers() {
+        return blockedUsers;
+    }
+
+    public void setBlockedUsers(Set<BlockedUser> blockedUsers) {
+        this.blockedUsers = blockedUsers;
     }
 }

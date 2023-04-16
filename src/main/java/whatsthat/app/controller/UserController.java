@@ -20,16 +20,17 @@ import javax.validation.Valid;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/user")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
-    @GetMapping("/{user_id}")
+    @GetMapping("/user/{user_id}")
     public GenericResponse findById(@PathVariable Long user_id) {
         try {
             User user = userService.findById(user_id);
@@ -41,7 +42,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{user_id}")
+    @PutMapping("/user/{user_id}")
     public GenericResponse update(@PathVariable(required = true) Long user_id, @Valid @RequestBody UserDTO userDTO , BindingResult result) {
         try{
             User userById = userService.findById(user_id);
@@ -81,7 +82,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/{user_id}/photo")
+    @PostMapping("/user/{user_id}/photo")
     public GenericResponse uploadProfilePhoto(@PathVariable(required = true) Long user_id, @RequestParam("file") MultipartFile file) {
             User user = userService.findById(user_id);
             String uploadedFilePath = FileUtils.uploadProfilePicture(file, user);
@@ -93,7 +94,7 @@ public class UserController {
             return new GenericResponse(500, "Server Error", "Failed to upload profile photo");
     }
 
-    @GetMapping("/{user_id}/photo")
+    @GetMapping("/user/{user_id}/photo")
     public ResponseEntity<?> getUserPhoto(@PathVariable("user_id") Long userId) {
         User user = userService.findById(userId);
         if (user == null) {
@@ -120,5 +121,17 @@ public class UserController {
         }
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam(name = "q", required = false) String query,
+                       @RequestParam(name = "search_in", required = false, defaultValue = "all") String searchIn,
+                       @RequestParam(name = "limit", required = false, defaultValue = "20") int limit,
+                       @RequestParam(name = "offset", required = false, defaultValue = "0") int offset) {
+
+        List<Map<String, Object>> searchedUsers = userService.search(query, searchIn, limit, offset);
+        return searchedUsers.size() > 0 ?
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(searchedUsers) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new GenericResponse(404, "Not found"));
+
+    }
 
 }
