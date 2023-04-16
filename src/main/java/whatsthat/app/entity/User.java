@@ -1,5 +1,8 @@
 package whatsthat.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -10,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@JsonIgnoreProperties("participants")
 public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,7 +35,22 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<BlockedUser> blockedUsers = new HashSet<>();
 
+
+    @JsonManagedReference
+    @ManyToMany(mappedBy = "participants")
+    private Set<Conversation> conversations = new HashSet<>();
+
     public User() {}
+
+    public void addConversation(Conversation conversation) {
+        this.conversations.add(conversation);
+        conversation.getParticipants().add(this);
+    }
+
+    public void removeConversation(Conversation conversation) {
+        this.conversations.remove(conversation);
+        conversation.getParticipants().remove(this);
+    }
 
     public Long getId() {
         return id;
@@ -95,5 +114,13 @@ public class User implements Serializable {
 
     public void setBlockedUsers(Set<BlockedUser> blockedUsers) {
         this.blockedUsers = blockedUsers;
+    }
+
+    public Set<Conversation> getConversations() {
+        return conversations;
+    }
+
+    public void setConversations(Set<Conversation> conversations) {
+        this.conversations = conversations;
     }
 }

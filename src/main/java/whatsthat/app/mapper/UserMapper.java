@@ -17,14 +17,12 @@ public interface UserMapper {
     @Mapping(source = "firstName", target = "firstName")
     @Mapping(source = "lastName", target = "lastName")
     @Mapping(source = "email", target = "email")
-    @Mapping(target = "password", ignore = true)
     UserDTO userToUserDTO(User user);
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "firstName", target = "firstName")
     @Mapping(source = "lastName", target = "lastName")
     @Mapping(source = "email", target = "email")
-    @Mapping(source = "password", target = "password")
     User userDTOToUser(UserDTO userDTO);
 
     ContactDTO contactToContactDTO(Contact contact);

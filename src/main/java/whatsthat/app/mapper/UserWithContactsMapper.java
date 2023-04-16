@@ -20,7 +20,6 @@ public interface UserWithContactsMapper {
     @Mapping(source = "user.firstName", target = "firstName")
     @Mapping(source = "user.lastName", target = "lastName")
     @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.profilePhotoPath", target = "profilePhotoPath")
     @Mapping(source = "contacts", target = "contacts", qualifiedByName = "toContactDTOList")
     UserWithContactsDTO toUserWithContactsDTO(User user, List<Contact> contacts);
 
