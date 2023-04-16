@@ -8,7 +8,6 @@ import java.util.Set;
 public class ConversationDTO {
     private Long id;
     private String name;
-    private Set<UserDTO> participants = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -26,11 +25,4 @@ public class ConversationDTO {
         this.name = name;
     }
 
-    public Set<UserDTO> getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(Set<UserDTO> participants) {
-        this.participants = participants;
-    }
 }

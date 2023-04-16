@@ -35,10 +35,13 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<BlockedUser> blockedUsers = new HashSet<>();
 
-
     @JsonManagedReference
     @ManyToMany(mappedBy = "participants")
     private Set<Conversation> conversations = new HashSet<>();
+
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    private List<Message> messages = new ArrayList<>();
 
     public User() {}
 
@@ -122,5 +125,13 @@ public class User implements Serializable {
 
     public void setConversations(Set<Conversation> conversations) {
         this.conversations = conversations;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(List<Message> messages) {
+        this.messages = messages;
     }
 }

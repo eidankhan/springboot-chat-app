@@ -18,8 +18,8 @@ public class ConversationController {
     @GetMapping("/chat")
     public ResponseEntity<?> fetchConversations(){
         System.out.println("Fetching conversations");
-        Set<ConversationDTO> conversations = conversationService.fetchConversations();
-        return conversations.size() > 0 ?
+        Map<String, Object> conversations = conversationService.fetchConversations();
+        return conversations != null ?
                 ResponseEntity.ok(conversations) :
                 ResponseEntity.noContent().build();
     }
@@ -41,9 +41,9 @@ public class ConversationController {
 
     @GetMapping("/chat/{chat_id}")
     public ResponseEntity<?> getChatDetails(@PathVariable Long chat_id) {
-        ConversationDTO conversationDTO = conversationService.fetchConversationById(chat_id);
-        return conversationDTO!= null?
-                ResponseEntity.ok(conversationDTO) :
+        Map<String, Object> data = conversationService.fetchConversationById(chat_id);
+        return data!= null?
+                ResponseEntity.ok(data) :
                 ResponseEntity.notFound().build();
     }
 

@@ -3,9 +3,14 @@ package whatsthat.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import whatsthat.app.dto.ConversationDTO;
+import whatsthat.app.dto.MessageDTO;
+import whatsthat.app.dto.UserDTO;
 import whatsthat.app.entity.Conversation;
+import whatsthat.app.entity.Message;
 import whatsthat.app.entity.User;
 import whatsthat.app.mapper.ConversationMapper;
+import whatsthat.app.mapper.MessageMapper;
+import whatsthat.app.mapper.UserMapper;
 import whatsthat.app.repository.ConversationRepository;
 import whatsthat.app.repository.UserRepository;
 import whatsthat.app.service.ConversationService;
@@ -29,6 +34,7 @@ public class ConversationServiceImpl implements ConversationService {
             User loggedInUser = userService.getLoggedInUser();
             Conversation conversation = new Conversation(conversationDTO.getName());
             conversation.addParticipant(loggedInUser);
+            conversation.setCreator(loggedInUser);
             conversationRepository.save(conversation);
             return conversation;
         } catch (Exception e) {
@@ -37,15 +43,21 @@ public class ConversationServiceImpl implements ConversationService {
         }    }
 
     @Override
-    public Set<ConversationDTO> fetchConversations() {
+    public Map<String, Object> fetchConversations() {
+        Map<String, Object> data = new HashMap<String, Object>();
+
         User loggedInUser = userService.getLoggedInUser();
         Set<Conversation> conversations = loggedInUser.getConversations();
-        Set<ConversationDTO> result = new HashSet<>();
 
         for (Conversation conversation : conversations) {
-            result.add(ConversationMapper.INSTANCE.toDto(conversation));
+            data.put("chat_id", conversation.getId());
+            data.put("name", conversation.getName());
+            data.put("creator", UserMapper.INSTANCE.userToUserDTO(conversation.getCreator()));
+            // Get Last message from conversation
+            int totalMessages = conversation.getMessages().size();
+            data.put("last_message", conversation.getMessages().get(totalMessages-1));
         }
-        return result;
+        return data;
     }
 
     @Override
@@ -86,9 +98,26 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public ConversationDTO fetchConversationById(Long id) {
+    public Map<String, Object>  fetchConversationById(Long id) {
+        Map<String, Object> data = new HashMap<String, Object>();
         Optional<Conversation> conversation = conversationRepository.findById(id);
-        return conversation.map(ConversationMapper.INSTANCE::toDto).orElse(null);
+        if (conversation.isPresent()) {
+            Conversation selectedConversation = conversation.get();
+            data.put("chat_id", selectedConversation.getId());
+            data.put("name", selectedConversation.getName());
+            data.put("creator", UserMapper.INSTANCE.userToUserDTO(selectedConversation.getCreator()));
+            // Populate the members of the conversation
+            Set<UserDTO> members = new HashSet<>();
+            for(User user: selectedConversation.getParticipants())
+                members.add(UserMapper.INSTANCE.userToUserDTO(user));
+            data.put("members", members);
+            // Populating messages
+            Set<MessageDTO> messages = new HashSet<>();
+            for(Message message: selectedConversation.getMessages())
+                messages.add(MessageMapper.INSTANCE.toDto(message));
+            data.put("messages", messages);
+        }
+        return data;
     }
 
     @Override
