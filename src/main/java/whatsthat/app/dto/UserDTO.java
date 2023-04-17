@@ -1,5 +1,6 @@
 package whatsthat.app.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import whatsthat.app.entity.User;
 
 import java.util.List;
@@ -9,7 +10,9 @@ public class UserDTO {
     private String firstName;
     private String lastName;
     private String email;
+    @JsonIgnore
     private String password;
+    @JsonIgnore
     private String profilePhotoPath;
 
     public UserDTO(){}

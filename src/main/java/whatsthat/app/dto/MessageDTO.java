@@ -8,6 +8,7 @@ public class MessageDTO {
     private Long id;
     private String message;
     private LocalDateTime sentAt;
+    private UserDTO sender;
 
     public Long getId() {
         return id;
@@ -33,4 +34,11 @@ public class MessageDTO {
         this.sentAt = sentAt;
     }
 
+    public UserDTO getSender() {
+        return sender;
+    }
+
+    public void setSender(UserDTO sender) {
+        this.sender = sender;
+    }
 }

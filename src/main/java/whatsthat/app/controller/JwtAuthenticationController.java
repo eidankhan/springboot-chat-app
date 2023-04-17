@@ -2,7 +2,6 @@ package whatsthat.app.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -14,12 +13,10 @@ import whatsthat.app.dto.UserDTO;
 import whatsthat.app.config.JwtTokenUtil;
 import whatsthat.app.config.JwtUserDetailsService;
 import whatsthat.app.entity.User;
-import whatsthat.app.mapper.UserMapper;
 import whatsthat.app.modal.GenericResponse;
 import whatsthat.app.modal.JwtRequest;
 import whatsthat.app.service.UserService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,7 +93,7 @@ public class JwtAuthenticationController {
             if (existingUser != null) {
                 return new GenericResponse(400, "Bad Request","Email address already existys");
             }
-            UserDTO createdUser = userService.save(UserMapper.INSTANCE.userDTOToUser(user));
+            UserDTO createdUser = userService.save(new User(user.getFirstName(), user.getLastName(), user.getEmail(), user.getPassword()));
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("user_id", createdUser.getId());
             return new GenericResponse(200, "Created", data);
@@ -106,25 +103,4 @@ public class JwtAuthenticationController {
         }
     }
 
-    @PostMapping("/logout")
-    public GenericResponse logout(HttpServletRequest request) {
-        try {
-            String authorizationHeader = request.getHeader("Authorization");
-            String token = null;
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-                token = authorizationHeader.substring(7);
-            }
-            String email = jwtTokenUtil.getUsernameFromToken(token);
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            if (token != null && jwtTokenUtil.validateToken(token, userDetails)) {
-                jwtTokenUtil.expireToken(token);
-                return new GenericResponse(200, "0K", "Successfully logged out");
-            }
-            return new GenericResponse(400, "Bad Request", "Invalid Token");
-        }
-        catch (Exception e) {
-            return new GenericResponse(500, "Server Error", "Invalid Token");
-        }
-    }
 }

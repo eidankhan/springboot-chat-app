@@ -55,7 +55,9 @@ public class ConversationServiceImpl implements ConversationService {
             data.put("creator", UserMapper.INSTANCE.userToUserDTO(conversation.getCreator()));
             // Get Last message from conversation
             int totalMessages = conversation.getMessages().size();
-            data.put("last_message", conversation.getMessages().get(totalMessages-1));
+            Message lastMessage = conversation.getMessages().get(totalMessages - 1);
+            MessageDTO dto = MessageMapper.INSTANCE.toDto(lastMessage);
+            data.put("last_message", dto);
         }
         return data;
     }

@@ -13,6 +13,7 @@ public interface MessageMapper {
     @Mapping(source = "id", target = "id")
     @Mapping(source = "message", target = "message")
     @Mapping(source = "sentAt", target = "sentAt")
+    @Mapping(source = "sender", target = "sender")
     MessageDTO toDto(Message message);
 
 }
